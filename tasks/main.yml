@@ -8,18 +8,23 @@
   tags:
     - vars
 
+- name: Update repositories cache on Ubuntu Xenial
+  apt:
+    update_cache: true
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '16.04'
+
 - name: Install required packages
   package:
     name: '{{ item }}'
-    state: latest
-  become: yes
+    state: present
+  become: true
   with_items: '{{ PACKAGES }}'
 
 - name: Create temporary working directory
   file:
     path: "{{ rclone_setup_tmp_dir }}"
     state: directory
-    mode: 0775
+    mode: '0775'
 
 - name: Do stable install
   include_tasks: stable.yml
@@ -31,37 +36,37 @@
 
 - name: Copy rclone binary
   copy:
-    src: "{{ rclone_setup_tmp_dir}}/rclone-v{{ rclone_version }}-linux-{{ rclone_arch }}/rclone"
+    src: "{{ rclone_setup_tmp_dir }}/rclone-v{{ rclone_version }}-linux-{{ rclone_arch }}/rclone"
     dest: "/usr/bin/rclone"
-    mode: 0755
+    mode: '0755'
     owner: root
     group: root
     remote_src: true
-  become: yes
+  become: true
 
 - name: Make dir for local manpages
   file:
     path: '{{ MAN_PAGES.PATH }}'
     state: directory
-    mode: 0775
+    mode: '0775'
     owner: '{{ MAN_PAGES.OWNER }}'
     group: '{{ MAN_PAGES.GROUP }}'
-  become: yes
+  become: true
   when: install_manpages
 
 - name: Copy rclone manpage
   copy:
-    src: "{{ rclone_setup_tmp_dir}}/rclone-v{{ rclone_version }}-linux-{{ rclone_arch }}/rclone.1"
+    src: "{{ rclone_setup_tmp_dir }}/rclone-v{{ rclone_version }}-linux-{{ rclone_arch }}/rclone.1"
     dest: "{{ MAN_PAGES.PATH }}/rclone.1"
-    mode: 0644
+    mode: '0644'
     owner: root
     group: root
     remote_src: true
-  become: yes
+  become: true
   when: install_manpages
 
 - name: Update mandb
-  shell: mandb
-  become: yes
+  command: mandb
+  become: true
   changed_when: false
   when: install_manpages
